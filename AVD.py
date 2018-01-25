@@ -20,31 +20,51 @@ except:
 
 import sys
 import argparse
-
+from pydub import AudioSegment
+import os
 #search=sys.argv[2]
 #mode=sys.argv[1]
 parser=argparse.ArgumentParser()
 parser.add_argument("-m","--mode",help="mode -a for audio. -v for video",type=str)
 parser.add_argument("-s","--song",help="Name of song",type=str)
 parser.add_argument("-f","--folder",help="Folder to save",type=str)
+parser.add_argument("-n","--name", nargs='?' ,default=os.getcwd(),type=str)
 args=parser.parse_args()
 html=requests.get("https://www.youtube.com/results?search_query="+args.song).content
 soup=BeautifulSoup(html,"html.parser")
 #for vid in soup.findAll(attrs={'class':'yt-uix-tile-link'}):
 print("https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]["href"])
 link="https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]["href"]
+#print("name="+args.name)
 if args.mode == 'audio':
-	ydl_opts = {
-	    'format': 'bestaudio/best',
-	    'postprocessors': [{
-	        'key': 'FFmpegExtractAudio',
-	        'preferredcodec': 'mp3',
-	        'preferredquality': '192',
-	    }],
-	    'outtmpl':args.folder+'/%(title)s.%(ext)s'
+	if args.name:
+		ydl_opts = {
+		    'format': 'bestaudio/best',
+		    'postprocessors': [{
+		        'key': 'FFmpegExtractAudio',
+		        'preferredcodec': 'mp3',
+		        'preferredquality': '192',
+		    }],
+		    'outtmpl':args.folder+'/'+args.name+'.%(ext)s'
 	}
+	else:
+		ydl_opts = {
+		    'format': 'bestaudio/best',
+		    'postprocessors': [{
+		        'key': 'FFmpegExtractAudio',
+		        'preferredcodec': 'mp3',
+		        'preferredquality': '192',
+		    }],
+		    'outtmpl':args.folder+'/%(title)s.%(ext)s'
+	}
+
+
 elif args.mode=='video':
-	ydl_opts={'outtmpl':args.folder+'/%(title)s.%(ext)s'}
+
+	if not args.name:
+		ydl_opts={'outtmpl':args.folder+'/%(title)s.%(ext)s'}
+	else:
+		ydl_opts={'outtmpl':args.folder+'/'+args.name+'.%(ext)s'}
 
 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
     ydl.download([link])

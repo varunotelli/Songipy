@@ -18,6 +18,7 @@ except:
 	pip.main(['install','bs4'])
 	from bs4 import BeautifulSoup
 
+from moviepy.editor import *
 import sys
 import argparse
 from pydub import AudioSegment
@@ -87,13 +88,25 @@ with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 print(title)
 
 if args.trim=="y":
-	st_minute=int(args.start.split(':')[0])
-	st_sec=int(args.start.split(':')[1])
-	st_time=(st_minute*60*1000)+(st_sec*1000)
-	f_minute=int(args.finish.split(':')[0])
-	f_sec=int(args.finish.split(':')[1])
-	f_time=(f_minute*60*1000)+(f_sec*1000)+1000
+	if args.mode=="audio":
+		st_minute=int(args.start.split(':')[0])
+		st_sec=int(args.start.split(':')[1])
+		st_time=(st_minute*60*1000)+(st_sec*1000)
+		f_minute=int(args.finish.split(':')[0])
+		f_sec=int(args.finish.split(':')[1])
+		f_time=(f_minute*60*1000)+(f_sec*1000)+1000
 
-	song = AudioSegment.from_mp3(args.folder+'/'+title.replace("|","_")+".mp3")    
-	song=song[st_time:f_time]
-	song.export(title.replace("|","_")+".mp3",format="mp3")
+		song = AudioSegment.from_mp3(args.folder+'/'+title.replace("|","_")+".mp3")    
+		song=song[st_time:f_time]
+		song.export(title.replace("|","_")+".mp3",format="mp3")
+	elif args.mode=="video":
+		st_minute=int(args.start.split(':')[0])
+		st_sec=int(args.start.split(':')[1])
+		st_time=(st_minute*60)+(st_sec)
+		f_minute=int(args.finish.split(':')[0])
+		f_sec=int(args.finish.split(':')[1])
+		f_time=(f_minute*60)+(f_sec)
+		clip=VideoFileClip(title.replace("|","_")+".webm").subclip(st_time,f_time)
+		clip.write_videofile(title.replace("|","_")+".webm")
+
+

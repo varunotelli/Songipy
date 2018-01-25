@@ -80,7 +80,7 @@ elif args.mode=='video':
 	else:
 		title=args.name
 		#title=soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title']
-		ydl_opts={'outtmpl':args.folder+'/'+args.name+'.%(ext)s'}
+		ydl_opts={'outtmpl':args.folder+'/'+title+'.%(ext)s'}
 
 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
     title=ydl.extract_info(link,download=True).get('title',None)

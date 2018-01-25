@@ -19,6 +19,8 @@ except:
 	from bs4 import BeautifulSoup
 
 from moviepy.editor import *
+from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+
 import sys
 import argparse
 from pydub import AudioSegment
@@ -106,7 +108,7 @@ if args.trim=="y":
 		f_minute=int(args.finish.split(':')[0])
 		f_sec=int(args.finish.split(':')[1])
 		f_time=(f_minute*60)+(f_sec)
-		clip=VideoFileClip(title.replace("|","_")+".webm").subclip(st_time,f_time)
-		clip.write_videofile(title.replace("|","_")+".webm")
-
+		#clip=VideoFileClip(title.replace("|","_")+".webm").subclip(st_time,f_time)
+		#clip.write_videofile(title.replace("|","_")+".webm")
+		ffmpeg_extract_subclip(args.folder+"/"+title.replace("|","_")+".webm",st_time,f_time, targetname="test1.webm")
 

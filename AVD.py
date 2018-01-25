@@ -25,19 +25,28 @@ import os
 #search=sys.argv[2]
 #mode=sys.argv[1]
 parser=argparse.ArgumentParser()
-parser.add_argument("-m","--mode",help="mode -a for audio. -v for video",type=str)
+parser.add_argument("-m","--mode",help="mode audio for audio. video for video",type=str)
 parser.add_argument("-s","--song",help="Name of song",type=str)
-parser.add_argument("-f","--folder",help="Folder to save",type=str)
-parser.add_argument("-n","--name", nargs='?' ,default=os.getcwd(),type=str)
+parser.add_argument("-f","--folder",help="Folder to save",default=".",type=str)
+parser.add_argument("-n","--name", help="Provide a name for the file", nargs='?' ,default=None,type=str)
+parser.add_argument("-t","--trim", help="Trim audio file y or n?",nargs='?' ,default="n",type=str)
+parser.add_argument("-st","--start",help="Enter start time",nargs='?' ,default=None,type=str)
+parser.add_argument("-fin","--finish",help="Enter finish time",nargs='?' ,default=None,type=str)
+
+
 args=parser.parse_args()
 html=requests.get("https://www.youtube.com/results?search_query="+args.song).content
 soup=BeautifulSoup(html,"html.parser")
 #for vid in soup.findAll(attrs={'class':'yt-uix-tile-link'}):
+#print(soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title'])
+title=soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title']
+#title=""
 print("https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]["href"])
 link="https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]["href"]
 #print("name="+args.name)
 if args.mode == 'audio':
 	if args.name:
+		title=args.name
 		ydl_opts = {
 		    'format': 'bestaudio/best',
 		    'postprocessors': [{
@@ -48,6 +57,7 @@ if args.mode == 'audio':
 		    'outtmpl':args.folder+'/'+args.name+'.%(ext)s'
 	}
 	else:
+		#title='%(title)s'
 		ydl_opts = {
 		    'format': 'bestaudio/best',
 		    'postprocessors': [{
@@ -59,13 +69,31 @@ if args.mode == 'audio':
 	}
 
 
+
 elif args.mode=='video':
 
 	if not args.name:
+		#title='%(title)s'
 		ydl_opts={'outtmpl':args.folder+'/%(title)s.%(ext)s'}
+
 	else:
+		title=args.name
+		#title=soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title']
 		ydl_opts={'outtmpl':args.folder+'/'+args.name+'.%(ext)s'}
 
 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-    ydl.download([link])
-    
+    title=ydl.extract_info(link,download=True).get('title',None)
+
+print(title)
+
+if args.trim=="y":
+	st_minute=int(args.start.split(':')[0])
+	st_sec=int(args.start.split(':')[1])
+	st_time=(st_minute*60*1000)+(st_sec*1000)
+	f_minute=int(args.finish.split(':')[0])
+	f_sec=int(args.finish.split(':')[1])
+	f_time=(f_minute*60*1000)+(f_sec*1000)+1000
+
+	song = AudioSegment.from_mp3(args.folder+'/'+title.replace("|","_")+".mp3")    
+	song=song[st_time:f_time]
+	song.export(title.replace("|","_")+".mp3",format="mp3")

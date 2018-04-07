@@ -1,4 +1,9 @@
 from __future__ import unicode_literals
+
+import os
+
+os.environ["PATH"]+=os.pathsep+"C:\\Users\\Infinitive\\Downloads\\ffmpeg-3.2-win-32"
+
 import pip
 try:
 	import youtube_dl
@@ -8,7 +13,7 @@ except:
 
 try:
 	import requests
-except:
+except: 
 	pip.main(['install','requests'])
 	import requests
 
@@ -24,7 +29,7 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import sys
 import argparse
 from pydub import AudioSegment
-import os
+
 #search=sys.argv[2]
 #mode=sys.argv[1]
 parser=argparse.ArgumentParser()
@@ -44,8 +49,11 @@ soup=BeautifulSoup(html,"html.parser")
 #print(soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title'])
 title=soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title']
 #title=""
-print("https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]["href"])
-link="https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]["href"]
+for i in range(0,3):
+	print(str(i+1)+"."+soup.findAll(attrs={'class':'yt-uix-tile-link'})[i]["title"])
+ch=int(input("Enter choice"))
+print("https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[ch-1]["href"])
+link="https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[ch-1]["href"]
 #print("name="+args.name)
 if args.mode == 'audio':
 	if args.name:
@@ -77,38 +85,42 @@ elif args.mode=='video':
 
 	if not args.name:
 		#title='%(title)s'
-		ydl_opts={'outtmpl':args.folder+'/%(title)s.%(ext)s'}
+		ydl_opts={'format':'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]','outtmpl':args.folder+'/%(title)s.%(ext)s'}
 
 	else:
 		title=args.name
 		#title=soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title']
-		ydl_opts={'outtmpl':args.folder+'/'+title+'.%(ext)s'}
+		ydl_opts={'format':'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]','outtmpl':args.folder+'/'+title+'.%(ext)s'}
 
 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
     title=ydl.extract_info(link,download=True).get('title',None)
 
 print(title)
 
-if args.trim=="y":
+ch2=input("Would you like to trim the "+args.mode+"?")
+if ch2=="y":
+	start=input("Enter start time of trim ")
+	fin=input("Enter finish time of trim ")
 	if args.mode=="audio":
-		st_minute=int(args.start.split(':')[0])
-		st_sec=int(args.start.split(':')[1])
+		st_minute=int(start.split(':')[0])
+		st_sec=int(start.split(':')[1])
 		st_time=(st_minute*60*1000)+(st_sec*1000)
-		f_minute=int(args.finish.split(':')[0])
-		f_sec=int(args.finish.split(':')[1])
-		f_time=(f_minute*60*1000)+(f_sec*1000)+1000
+		f_minute=int(fin.split(':')[0])
+		f_sec=int(fin.split(':')[1])
+		f_time=(f_minute*60*1000)+(f_sec*1000)
 
 		song = AudioSegment.from_mp3(args.folder+'/'+title.replace("|","_")+".mp3")    
 		song=song[st_time:f_time]
 		song.export(title.replace("|","_")+".mp3",format="mp3")
 	elif args.mode=="video":
-		st_minute=int(args.start.split(':')[0])
-		st_sec=int(args.start.split(':')[1])
+		st_minute=int(start.split(':')[0])
+		st_sec=int(start.split(':')[1])
 		st_time=(st_minute*60)+(st_sec)
-		f_minute=int(args.finish.split(':')[0])
-		f_sec=int(args.finish.split(':')[1])
+		f_minute=int(fin.split(':')[0])
+		f_sec=int(fin.split(':')[1])
 		f_time=(f_minute*60)+(f_sec)
 		#clip=VideoFileClip(title.replace("|","_")+".webm").subclip(st_time,f_time)
 		#clip.write_videofile(title.replace("|","_")+".webm")
-		ffmpeg_extract_subclip(args.folder+"/"+title.replace("|","_")+".webm",st_time,f_time, targetname="test1.webm")
+		ffmpeg_extract_subclip(args.folder+"/"+title.replace("|","_")+".mp4",st_time,f_time, targetname="test1.mp4")
+	print("Trim Successful!")	
 

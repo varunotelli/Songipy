@@ -3,3 +3,4 @@ requests
 bs4
 moviepy
 pydub
+youtube-search-python

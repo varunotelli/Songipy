@@ -45,13 +45,16 @@ def main():
 	parser.add_argument("-fin","--finish",help="Enter finish time",nargs='?' ,default=None,type=str)
 	args=parser.parse_args()
 	html=requests.get("https://www.youtube.com/results?search_query="+args.song).content
+	#print(html)
 	soup=BeautifulSoup(html,"html.parser")
-	title=soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title']
+	#title=soup.findAll(attrs={'class':'yt-uix-tile-link'})[0]['title']
+	from youtubesearchpython import VideosSearch
+	videosSearch = VideosSearch(args.song, limit = 5)
 	for i in range(0,5):
-		print(str(i+1)+"."+soup.findAll(attrs={'class':'yt-uix-tile-link'})[i]["title"])
+		print(str(i+1)+"."+ videosSearch.result()['result'][i]['title'])
 	ch=int(input("Enter choice "))
 	#print("https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[ch-1]["href"])
-	link="https://www.youtube.com"+soup.findAll(attrs={'class':'yt-uix-tile-link'})[ch-1]["href"]
+	link=videosSearch.result()['result'][ch-1]['link']
 	if args.mode == 'audio':
 		if args.name:
 			title=args.name
